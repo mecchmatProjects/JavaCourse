@@ -1,7 +1,7 @@
 # JavaCourse
 
 ## Java Practicum (Homework, Classwork)
-https://github.com/mecchmatProjects/JavaPracticum
+https://github.com/mecchmatProjects/JavaPracticum2
 
 ## Java Projects
 
