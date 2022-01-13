@@ -1,0 +1,71 @@
+
+
+
+class Rock {
+  //no-arg constructor (default constructor)
+  Rock() { // This is the constructor
+    System.out.print("Rock ”);
+  }
+}
+public class SimpleConstructor {
+	public static void main(String[] args) {
+		for(int i = 0; i < 10; i++)
+			new Rock();
+	}
+}
+
+
+class EmptyClass {} 
+
+public class DefaultConstructor {
+	public static void main(String[] args) {
+           EmptyClass b = new EmptyClass(); // Default!
+}
+
+class Bird2 {
+	Bird2(int i) {}
+	Bird2(double d) {}
+}
+
+public class NoSynthests {
+	public static void main(String[] args) {
+		//- BirdZ b = new Bird2(); // No default
+		BirdZ b2 = new Bird2(1);
+		Bird2 b3 =new Bird2(1.0);
+		Bird2 b4 =new Bird2(b3);//????
+	}
+}
+
+
+class Book {
+boolean checkedOut = false;
+Book(boolean checkOut) {
+checkedOut = checkOut;
+}
+void checkIn() {
+checkedOut = false;
+}
+@Override
+public void finalize() {
+if(checked0ut)
+System.out.println(”Error: checked out”);
+// Normally, you’ll also do this:
+// super.finalize(); // Call the base-class version
+}
+}
+public class TerminationCondition {
+public static void main($tring[] args) {
+Book novel = new Book(true);
+// Proper cleanup:
+novel.checkIn();
+// Drop the reference, forget to clean up:
+new Book(true);
+// Force garbage collection & finalization:
+System.gc();
+new Nap(1); // One second delay
+}
+}
+/* Output:
+Error: checked out
+*/
+The termination condition

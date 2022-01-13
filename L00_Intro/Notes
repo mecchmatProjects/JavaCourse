@@ -1,0 +1,5 @@
+В состав SE входят классы, начинающиеся с "java", такие как java.lang, java.util, java.net, java.io, java.sql и т.д. https://ru.wikipedia.org/wiki/Java_Platform,_Standard_Edition . В Java EE же входят классы, начинающиеся на javax, например javax.servlet.GenericServlet ﻿https://ru.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition. Технологии, которые входят в состав ﻿Java EE, разрабатываются в соотвествии со спецификациями (JSR), написанными специальным комитетом(JCP). ﻿
+
+http://www.programcreek.com/2013/04/jvm-run-time-data-areas/﻿
+
+ внутренности VM http://blog.jamesdbloom.com/JVMInternals.html

@@ -1,0 +1,107 @@
+Преобразование InputStream в строку (String)
+
+Очень часто встречающая задача, давайте рассмотрим какими способами можно это сделать (их будет 11):
+
+    Используя IOUtils.toString из библиотеки Apache Commons. Один из самых коротких однострочников.
+
+    String result = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+
+    Используя CharStreams из библиотеки guava. Тоже довольно короткий код.
+
+    try(InputStreamReader reader = new InputStreamReader(inputStream, Charsets.UTF_8)) {
+        String result = CharStreams.toString(reader);
+    }
+
+
+    Используя Scanner (JDK). Решение короткое, хитрое, с помощью чистого JDK, но это скорее хак, который вынесет мозг тем кто о таком фокусе не знает.
+
+    try(Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {            
+        String result = s.hasNext() ? s.next() : "";
+    }
+
+
+    Используя Stream Api с помощью Java 8. Предупреждение: Оно заменяет разные переносы строки (такие как \r\n) на \n, иногда это может быть критично.
+
+    try(BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+        String result = br.lines().collect(Collectors.joining("\n"));
+    }
+
+
+    Используя parallel Stream Api (Java 8). Предупреждение: Как и 4 решение, оно заменяет разные переносы строки (такие как \r\n) на \n.
+
+    try(BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+        String result = br.lines().parallel().collect(Collectors.joining("\n"));
+    }
+
+
+    Используя InputStreamReader и StringBuilder из обычного JDK
+
+    final int bufferSize = 1024;
+    final char[] buffer = new char[bufferSize];
+    final StringBuilder out = new StringBuilder();
+    try(Reader in = new InputStreamReader(inputStream, "UTF-8")) {
+        for (; ; ) {
+            int rsz = in.read(buffer, 0, buffer.length);
+            if (rsz < 0)
+                 break;
+            out.append(buffer, 0, rsz);
+        }
+        return out.toString();
+    }
+
+
+    Используя StringWriter и IOUtils.copy из Apache Commons
+
+    try(StringWriter writer = new StringWriter()) {
+        IOUtils.copy(inputStream, writer, "UTF-8");
+        return writer.toString();
+    }
+
+
+    Используя ByteArrayOutputStream и inputStream.read из JDK
+
+    try(ByteArrayOutputStream result = new ByteArrayOutputStream()) {
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = inputStream.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result.toString("UTF-8");
+    }
+Самым быстрым решением во всех случаях и всех системах оказался 8 тест: Используя ByteArrayOutputStream и inputStream.read из JDK
+
+    Используя BufferedReader из JDK. Предупреждение: Это решение заменяет разные переносы строк (такие как \n\r) на line.separator system property (например, в Windows на "\r\n").
+
+    String newLine = System.getProperty("line.separator");
+    try(BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+          StringBuilder result = new StringBuilder();
+          String line; boolean flag = false;
+          while ((line = reader.readLine()) != null) {
+              result.append(flag? newLine: "").append(line);
+              flag = true;
+          }
+         return result.toString();
+    }
+
+
+    Используя BufferedInputStream и ByteArrayOutputStream из JDK
+
+    try(BufferedInputStream bis = new BufferedInputStream(inputStream); ByteArrayOutputStream buf = new ByteArrayOutputStream()) {
+            int result = bis.read();
+            while(result != -1) {
+                buf.write((byte) result);
+                result = bis.read();
+            }
+            return buf.toString();
+    }
+
+
+    Используя inputStream.read() и StringBuilder (JDK). Предупреждение: Это решение не работает с Unicode, например с русским текстом
+
+    int ch;
+    StringBuilder sb = new StringBuilder();
+    while((ch = inputStream.read()) != -1)
+        sb.append((char)ch);
+    reset();
+    return sb.toString();

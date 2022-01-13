@@ -1,0 +1,31 @@
+Основные виды классов логгирования в Java SE:
+
+I, Handler'ы
+
+Существует несколько Handler в Java SE:
+
+1. StreamHandler — Запись в OutputStream,
+
+2. ConsoleHandler — Запись в System.err (консоль),
+
+3. FileHandler — Запись в файл,
+
+4. SocketHandler — Запись в TCP ports,
+
+5. MemoryHandler — Сохранение логов в памяти,
+
+II, Форматеры
+
+Java SE предоставляет два вида форматеров:
+
+1. SimpleFormatter — форматирование в виде удобном для чтения человеком,
+
+2. XMLFormatter — форматирование xml структуру
+
+III. Служебные классы
+
+1. LogManager — Класс LogManager хранит информацию о всех логерах системы и их свойствамх,
+
+2. Класс LoggingPermission служит для определения прав по изменению логгеров и т.п. для SecurityManager.
+
+3. Класс Logger служит для логирования сообщений, а класс LogRecord — для передачи сообщений между фремворками логирования и Handlers. 

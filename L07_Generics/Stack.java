@@ -4,7 +4,6 @@ interface IntStack {
   int pop(); // retrieve an item
 }
 
-listing 19
 // An implementation of IntStack that uses fixed storage.
 class FixedStack implements IntStack {
   private int stck[];
@@ -55,7 +54,7 @@ class IFTest {
   }
 }
 
-listing 20
+
 // Implement a "growable" stack.
 class DynStack implements IntStack {
   private int stck[];
@@ -110,7 +109,7 @@ class IFTest2 {
   }
 }
 
-listing 21
+
 /* Create an interface variable and
    access stacks through it.
 */

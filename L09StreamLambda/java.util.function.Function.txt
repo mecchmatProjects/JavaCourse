@@ -1,0 +1,201 @@
+
+Java 8
+Java 8 java.util.function.Function Tutorial with Examples
+December 11, 2015
+
+Tutorial explains the in-built functional interface Function<T, R> introduced in Java 8. It uses examples to show how the apply(), andThen(), compose() & identity() methods of the Function interface are to be used.
+
+What is java.util.function.Function
+Function<T, R> is an in-built functional interface introduced in Java 8 in the java.util.function package. The primary purpose for which Function<T, R> has been created is for mapping scenarios i.e when an object of a type is taken as input and it is converted(or mapped) to another type. Common usage of Function is in streams where-in the map function of a stream accepts an instance of Function to convert the stream of one type to a stream of another type.
+Since Function<T, R> is a functional interface, hence it can be used as the assignment target for a lambda expression or a method reference.
+
+Function Descriptor of Function<T, R>
+Function<T, R>’s Function Descriptor is T -> R. This means an object of type T is input to the lambda and an object of type R is obtained as return value. To understand Function Descriptors in details you can refer the function descriptor tutorial.
+
+Advantage of predefined java.util.function.Function: In all scenarios where an object of a particular type is the input, an operation is performed on it and and object of another type is returned as output, the in-built functional interface Function<T, R> can be used without the need to define a new functional interface every time.
+
+java.util.function.Function source code
+java.util.function.Function source code
+@FunctionalInterface
+public interface Function<T, R> {
+    R apply(T t);
+    default <V> Function<V, R> compose(Function<? super V, ? extends T> before) {
+        Objects.requireNonNull(before);
+        return (V v) -> apply(before.apply(v));
+    }
+    default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) {
+        Objects.requireNonNull(after);
+        return (T t) -> after.apply(apply(t));
+    }
+    static <T> Function<T, T> identity() {
+        return t -> t;
+    }
+}
+Salient Points regarding Function<T, R>’s source code
+
+    Function interface has been defined with the generic types T & R, where T is the type of the input and R is the output type.
+    Method apply() is the primary abstract functional method of Function interface. It takes as input a parameter t of type T and gives an output object of type R.
+    Function<T, R> has two default methods. First default method compose() combines the function on which it is applied(lets call it the current function) with another function, named before, in such a way that when the combined function is applied then first the before function is applied which converts the input type V to type T. And then the current function converts this object of type T to its output type R. Thus, the combined function obtained as a result of compose() applies both the functions, in the process converting type V to R.
+    The second default method is andThen() which combines the function on which it is applied(current function) with another function, named after, in such a way that when the combined function is called then first the current function is applied which converts the input type T to type R. And then the after function is applied which converts from type R to V. Thus, the combined function obtained by using andThen() default method applies both functions internally, in the process converting type T to type V.
+    Function<T, R> also contains a static method identity() which is very simple as it returns as-is whatever is given to it as input. In the code above it takes as input a parameter t of Type T and returns back this t.
+
+Usage of apply() method of Function
+The below code shows example usage of apply() method where it converts/maps from a list of Employee types to a list of Strings containing the names of all Employees. Let us now go through the code after which I will explain how the apply() method works-
+Java 8 code example showing usage of Function.apply() method
+package com.javabrahman.java8;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+public class FunctionTRExample{
+  public static void main(String args[]){
+    Function<Employee, String> funcEmpToString= (Employee e)-> {return e.getName();};
+    List<Employee> employeeList= 
+     Arrays.asList(new Employee("Tom Jones", 45), 
+      new Employee("Harry Major", 25),
+      new Employee("Ethan Hardy", 65),
+      new Employee("Nancy Smith", 15),
+      new Employee("Deborah Sprightly", 29));
+    List<String> empNameList=convertEmpListToNamesList(employeeList, funcEmpToString);
+    empNameList.forEach(System.out::println);
+ }
+ public static List<String> convertEmpListToNamesList(List<Employee> employeeList, Function<Employee, String> funcEmpToString){
+   List<String> empNameList=new ArrayList<String>(); 
+   for(Employee emp:employeeList){
+     empNameList.add(funcEmpToString.apply(emp));
+   }
+   return empNameList;
+  }
+}
+ OUTPUT of the above code
+Tom Jones
+Harry Major
+Ethan Hardy
+Nancy Smith
+Deborah Sprightly
+Explanation of above example’s Code & Output
+
+    funcEmpToString is an instance of Function<Employee,String>. This is the java.util.function.Function instance which is used to convert/map from an Employee object to a String value.
+    The lambda defining funcEmpToString is – (Employee e)-> {return e.getName();} . It takes as input an Employee object and returns his\her name, which is a String value, as output.
+    The list of employees is passed to method convertEmpListToNamesList() along with the Function object funcEmpToString;
+    The method convertEmpListToNamesList() iterates over all the employees in the employee list, applies the function funcEmpToString to each of the Employee objects, getting back the employee names in String format, which it puts in a employee name list and sends it back to the main() method.
+    On printing the employee name list we get the names of all the employees as required.
+
+Usage of default method andThen() of Function
+As explained earlier, andThen() default method combines the current Function instance with another one and returns a combined Function instance which applies the two functions in sequence with the function passed as parameter to andThen() being invoked after the current function.
+Lets see the example below which uses the same funcEmpToString Function as used in the apply() method’s usage example above and combines it with a initialFunction Function instance which maps\converts a String to its first letter –
+Java 8 code showing usage of default method Function.andThen()
+//import statements are same as in apply() example
+public class FunctionTRAndThenExample{
+  public static void main(String args[]){
+    Function<Employee, String> funcEmpToString= (Employee e)-> {return e.getName();};
+    List<Employee> employeeList=
+     Arrays.asList(new Employee("Tom Jones", 45), 
+      new Employee("Harry Major", 25),
+      new Employee("Ethan Hardy", 65),
+      new Employee("Nancy Smith", 15),
+      new Employee("Deborah Sprightly", 29));
+    Function<String,String> initialFunction= (String s)->s.substring(0,1);
+    List<String> empNameListInitials=convertEmpListToNamesList(employeeList, funcEmpToString.andThen(initialFunction));
+    empNameListInitials.forEach(str->{System.out.print(" "+str);});
+ }
+  public static List<String> convertEmpListToNamesList(List<Employee> employeeList, Function<Employee, String> funcEmpToString){
+   List<String> empNameList=new ArrayList<String>(); 
+   for(Employee emp:employeeList){
+     empNameList.add(funcEmpToString.apply(emp));
+   }
+   return empNameList;
+  }
+}
+ OUTPUT of the above code
+T H E N D
+Explanation of above example’s Code & Output
+
+    Function instance funcEmpToString maps\converts an Employee object to a String of his\her name.
+    Function instance initialFunction maps\converts a String to its initial or first letter.
+    Default method andThen() is used to combine initialFunction with funcEmpToString. What the combined method does is that it first maps an Employee to his\her name and then takes out the first letter from the name as a String value. This combined function is passed as Function parameter to convertEmpListToNamesList() method along with the employee list.
+    When the convertEmpListToNamesList() applies the combined function to each of the Employee objects, then the result is a String list first letters of names of each employee.
+    This is the required output i.e. T H E N D
+
+Usage of default method compose() of Function
+As explained earlier, compose() default method combines the current Function instance with another one and returns a combined Function instance which applies the two functions in sequence with the parameter function to compose() being invoked before the current function.
+Lets see the example below which uses the same funcEmpToString Function as used in the apply() usage example and combines it with a funcEmpFirstName Function instance which converts the full-name of the employee object passed to it to just the first name of the employee-
+Java 8 code showing usage of default method Function.compose()
+//import statements are same as in apply() example
+public class FunctionTRComposeExample{
+  public static void main(String args[]){
+    Function<Employee, String> funcEmpToString= (Employee e)-> {return e.getName();};
+    Function<Employee, Employee> funcEmpFirstName= 
+     (Employee e)-> {int index= e.getName().indexOf(" ");
+                 String firstName=e.getName().substring(0,index);
+                 e.setName(firstName);
+                 return e;};
+    List<Employee> employeeList=
+      Arrays.asList(new Employee("Tom Jones", 45), 
+       new Employee("Harry Major", 25),
+       new Employee("Ethan Hardy", 65),
+       new Employee("Nancy Smith", 15),
+       new Employee("Deborah Sprightly", 29));
+    List<String> empFirstNameList= convertEmpListToNamesList(employeeList,funcEmpToString.compose(funcEmpFirstName));
+    empFirstNameList.forEach(str->{System.out.print(" "+str);});
+  }
+ public static List<String> convertEmpListToNamesList(List<Employee> employeeList, Function<Employee, String> funcEmpToString){
+   List<String> empNameList=new ArrayList<String>(); 
+   for(Employee emp:employeeList){
+     empNameList.add(funcEmpToString.apply(emp));
+   }
+   return empNameList;
+  }
+}
+ OUTPUT of the above code
+Tom Harry Ethan Nancy Deborah
+Explanation of above example’s Code & Output
+
+    Function instance funcEmpToString maps\converts an Employee object to a String value of his\her name.
+    Function instance funcEmpFirstName maps\converts the name inside an Employee object to the first name using the substring method of String.
+    Default method compose() is used to combine funcEmpFirstName with funcEmpToStringString. What the combined method does is that it first converts the name of an Employee into just his\her first name returning the same Employee object back with the changed value of name. It then converts\maps the Employee object to just its name as a String.This combined function is passed as Function<Employee, String> parameter to convertEmpListToNamesList() method along with the employee list.
+    When the convertEmpListToNamesList() applies the combined function to each of the Employee objects, then the result is the list of first names of each employee.
+    This is the required output i.e. Tom Harry Ethan Nancy Deborah
+
+Usage of static method identity() of Function
+Static method identity() is very simple – it just returns back the parameter which it gets as input. Lets see an example to see how identity() method works –
+Java 8 code showing usage of static method Function.identity()
+//import statements are same as in apply() example
+public class FunctionTRIdentityExample{
+  public static void main(String args[]){
+    Function<Employee, String> funcEmpToString= (Employee e)-> {return e.getName();};
+    List<Employee> employeeList=
+     Arrays.asList(new Employee("Tom Jones", 45), 
+      new Employee("Harry Major", 25),
+      new Employee("Ethan Hardy", 65),
+      new Employee("Nancy Smith", 15),
+      new Employee("Deborah Sprightly", 29));
+    List<Employee> empNameListInitials=applyIdentityToEmpList(employeeList, Function.identity());
+    empNameListInitials.forEach(System.out::println);
+ }
+  public static List<Employee> applyIdentityToEmpList(List<Employee> employeeList, Function<Employee, Employee> funcEmpToEmp){
+   List<Employee> empNameList=new ArrayList<Employee>(); 
+   for(Employee emp:employeeList){
+     empNameList.add(funcEmpToEmp.apply(emp));
+   }
+   return empNameList;
+  }
+}
+ OUTPUT of the above code
+Employee Name:Tom Jones Age:45
+Employee Name:Harry Major Age:25
+Employee Name:Ethan Hardy Age:65
+Employee Name:Nancy Smith Age:15
+Employee Name:Deborah Sprightly Age:29
+Explanation of above example’s Code & Output
+
+    Function instance funcEmpToString maps\converts an Employee object to a String of his\her name.
+    Employee list is passed to the method applyIdentityToEmpList() along with an instance of Function.identity(). The parameter of applyIdentityToEmpList() which takes Function.identity() value is nothing but Function<Employee, Employee> i.e. an equivalent of a Function which takes Employee as input and gives back (the same) Employee as output.
+    Method applyIdentityToEmpList() takes the input employee list, iterates through it, applies the identity() function to each employee in the list and returns back the list of employees obtained as a result of applying the identity() function.
+    As we now know, the identity function does nothing, it just returns back the object it receives as input. So, what we get back is the same employee list which we passed to the applyIdentityToEmpList() method! And the same i.e. original employee list is printed as output!!
+    This is how the static method Function.identity() works.
+
+By the way, if you need Java programming homework help online, you can hire expert programmers at AssignmentCore. They will do Java assignment for you.
+
+Summary
+In this tutorial we looked at what is the Function<T, R> in-built interface defined in Java 8 and what are its advantages. We then looked at how to use the Function interface using its apply() method, default methods andThen() & compose(), and lastly how to use the static method identity().

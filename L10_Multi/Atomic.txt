@@ -1,0 +1,466 @@
+
+Atomic Variables in Java with Examples
+
+
+
+In multithreading, the shared entity mostly leads to a problem when concurrency is incorporated. A shared entity such as, mutable object or variable, might be changed, which may result in the inconsistency of the program or database. So, it becomes crucial to deal with the shared entity while accessed concurrently. An atomic variable can be one of the alternatives in such a scenario. 
+
+Java provides atomic classes such as AtomicInteger, AtomicLong, AtomicBoolean and AtomicReference. Objects of these classes represent the atomic variable of int, long, boolean, and object reference respectively. These classes contain the following methods.
+
+
+    set(int value): Sets to the given value
+    get(): Gets the current value
+    lazySet(int value): Eventually sets to the given value
+    compareAndSet(int expect, int update): Atomically sets the value to the given updated value if the current value == the expected value
+    addAndGet(int delta): Atomically adds the given value to the current value
+    decrementAndGet(): Atomically decrements by one the current value
+
+Example:  
+
+
+// Atomic Variable
+AtomicInteger var;
+
+Need for Atomic Variable
+Consider the below example:
+
+class Counter extends Thread {
+ 
+    // Counter Variable
+    int count = 0;
+ 
+    // method which would be called upon
+    // the start of execution of a thread
+    public void run()
+    {
+        int max = 1_000_00_000;
+ 
+        // incrementing counter
+        // total of max times
+        for (int i = 0; i < max; i++) {
+            count++;
+        }
+    }
+}
+ 
+public class UnSafeCounter {
+    public static void main(String[] args)
+        throws InterruptedException
+    {
+        // Instance of Counter Class
+        Counter c = new Counter();
+ 
+        // Defining Two different threads
+        Thread first = new Thread(c, "First");
+        Thread second = new Thread(c, "Second");
+ 
+        // Threads start executing
+        first.start();
+        second.start();
+ 
+        // main thread will wait for
+        // both threads to get completed
+        first.join();
+        second.join();
+ 
+        // Printing final value of count variable
+        System.out.println(c.count);
+    }
+}
+Output: 
+
+137754082
+
+ 
+
+In a single thread environment, the above-mentioned class will give the expected result only. But when a multithreaded environment is concerned, it may lead to inconsistent results. It happens because updating “var” is done in three steps: Reading, updating, and writing. If two or more threads try to update the value at the same time, then it may not update properly.
+
+This issue can be solved using Lock and Synchronization, but not efficiently. 
+
+1. Using lock analogy or synchronization: Synchronization or Locking can solve our problem, but it compromises time efficiency or performance. First, it mandates resource and thread scheduler to control lock. Second, when multiple threads attempt to acquire a lock, only one of them wins, rest are suspended or blocked. Suspending or blocking of threads can have a huge impact on performance.
+
+import java.io.*;
+import java.util.concurrent.locks.*;
+ 
+class Counter extends Thread {
+ 
+    // Counter Variable
+    int count = 0;
+ 
+    // method which would be called upon
+    // the start of execution of a thread
+    public synchronized void run()
+    {
+ 
+        int max = 1_000_00_000;
+ 
+        // incrementing counter total of max times
+        for (int i = 0; i < max; i++) {
+            count++;
+        }
+    }
+}
+ 
+public class SynchronizedCounter {
+    public static void main(String[] args)
+        throws InterruptedException
+    {
+        // Instance of Counter Class
+        Counter c = new Counter();
+ 
+        // Defining Two different threads
+        Thread first = new Thread(c, "First");
+        Thread second = new Thread(c, "Second");
+ 
+        // Threads start executing
+        first.start();
+        second.start();
+ 
+        // main thread will wait for both
+        // threads to complete execution
+        first.join();
+        second.join();
+ 
+        // Printing final value of count variable
+        System.out.println(c.count);
+    }
+}
+Output: 
+
+200000000
+
+ 
+
+2. Using Atomic variable: 
+
+import java.util.concurrent.atomic.AtomicInteger;
+ 
+class Counter extends Thread {
+ 
+    // Atomic counter Variable
+    AtomicInteger count;
+ 
+    // Constructor of class
+    Counter()
+    {
+        count = new AtomicInteger();
+    }
+ 
+    // method which would be called upon
+    // the start of execution of a thread
+    public void run()
+    {
+ 
+        int max = 1_000_00_000;
+ 
+        // incrementing counter total of max times
+        for (int i = 0; i < max; i++) {
+            count.addAndGet(1);
+        }
+    }
+}
+ 
+public class AtomicCounter {
+    public static void main(String[] args)
+        throws InterruptedException
+    {
+        // Instance of Counter Class
+        Counter c = new Counter();
+ 
+        // Defining Two different threads
+        Thread first = new Thread(c, "First");
+        Thread second = new Thread(c, "Second");
+ 
+        // Threads start executing
+        first.start();
+        second.start();
+ 
+        // main thread will wait for both
+        // threads to complete execution
+        first.join();
+        second.join();
+ 
+        // Printing final value of count variable
+        System.out.println(c.count);
+    }
+}
+Output: 
+
+200000000
+
+ 
+
+ https://www.javatpoint.com/java-atomic
+
+Java Atomic
+
+In Java, atomic variables and operations used in concurrency. The multi-threading environment leads to a problem when concurrency is unified. The shared entity such as objects and variables may be changed during the execution of the program. Hence, they may lead to inconsistency of the program. So, it is important to take care of the shared entity while accessing concurrently. In such cases, the atomic variable can be a solution to it. In this section, we will discuss atomic classes, atomic variables, atomic operations, along with examples.
+
+Before moving ahead in this section, ensure that you are aware of thread, synchronization, and lock in Java.
+Java Atomic Classes
+
+Java provides a java.util.concurrent.atomic package in which atomic classes are defined. The atomic classes provide a lock-free and thread-safe environment or programming on a single variable. It also supports atomic operations. All the atomic classes have the get() and set() methods that work on the volatile variable. The method works the same as read and writes on volatile variables.
+
+The package provides the following atomic classes:
+Competitive questions on Structures in Hindi
+Competitive questions on Structures in Hindi
+
+Class 	Description
+AtomicBoolean 	It is used to update boolean value atomically.
+AtomicInteger 	It is used to update integer value atomically.
+AtomicIntegerArray 	An int array in which elements may be updated atomically.
+AtomicIntegerFieldUpdater 	A reflection-based utility that enables atomic updates to designated volatile int fields of designated classes.
+AtomicLong 	It is used to update long value atomically.
+AtomicLongArray 	A long array in which elements may be updated atomically.
+AtomicLongFieldUpdater 	A reflection-based utility that enables atomic updates to designated volatile long fields of designated classes.
+AtomicMarkableReference 	An AtomicMarkableReference maintains an object reference along with a mark bit, that can be updated atomically.
+AtomicReference 	An object reference that may be updated atomically.
+AtomicReferenceArray 	An array of object references in which elements may be updated atomically.
+AtomicReferenceFieldUpdater 	A reflection-based utility that enables atomic updates to designated volatile reference fields of designated classes.
+AtomicStampedReference 	An AtomicStampedReference maintains an object reference along with an integer "stamp", that can be updated atomically.
+DoubleAccumulator 	One or more variables that together maintain a running double value updated using a supplied function.
+DoubleAdder 	One or more variables that together maintain an initially zero double sum.
+LongAccumulator 	One or more variables that together maintain a running long value updated using a supplied function.
+LongAdder 	One or more variables that together maintain an initially zero long sum.
+
+Objects of these classes represent the atomic variable of int, long, boolean, and object reference respectively. The atomic classes have some common methods are as follows:
+Methods 	Description
+set() 	It is used to set the value.
+get() 	It is used to get the current value.
+lazySet() 	Eventually sets to the given value.
+compareAndSet 	Atomically sets the value to the given updated value if the current value == the expected value.
+Atomic Operations
+
+Those operations that always execute together is known as the atomic operations or atomic action. All the atomic operations either execute effectively happens all at once or it does not happen at all. Three key concepts are associated with atomic actions in Java are as follows:
+
+1. Atomicity deals with which actions and sets o actions have invisible For example, consider the following code snippet:
+
+    class NoAtomicOps  
+    {  
+    long counter=0;  
+    void increment()  
+    {  
+    for(;;)  
+    {  
+    count++;  
+    }  
+    }  
+    void decrement()  
+    {  
+    for(;;)  
+    {  
+    count--;  
+    }  
+    }  
+    //other statement  
+    }  
+
+In the above code, the behavior of running increment() and decrement() concurrently is undefined and not predictable.
+
+2. Visibility determines when the effect of one thread can be seen by another. For example, consider the following code snippet:
+
+    class InfiniteLoop  
+    {  
+    boolean done= false;  
+    void work()  
+    {  
+    //thread T2 read  
+    while(!done)  
+    {  
+    //do work  
+    }  
+    }  
+    void stopWork()  
+    {  
+    //thread T1 write  
+    done=true;  
+    }  
+    //statements  
+    }  
+
+In the above code, it is possible that thread T2 will never stop even after thread T1 sets done to true. Also, not that there is no synchronization between threads.
+
+3. Ordering determines when actions in one thread occur out of order with respect to another thread.
+
+    class Order  
+    {  
+    boolean a=false;  
+    boolean b=false;  
+    void demo1()  //thread T1  
+    {  
+    a=true;  
+    b=true;  
+    }  
+    boolean demo2()  //thread T2  
+    {  
+    boolean r1=b;   //sees true  
+    boolean r2=a;   //sees false  
+    boolean r3=a;   //sees true   
+    //returns true  
+    return (r1 && !r2) && r3;  
+    }  
+    }  
+
+The order that fields a and b appear in thread T2 may differ from the order they were set in Thread T1.
+
+Let's understand it through an example.
+
+    public class AtomicExample  
+    {  
+    int count;  
+    public void incrementCount()  
+    {  
+    count=1;  
+    }  
+
+In the above code snippet, we have declared an int type variable count and inside the method incrementCount() assigned it to 1. In such a case, either all happen together or would not happen at all. Hence, it represents an atomic operation and the operation is known as atomicity.
+
+Let's consider another code snippet.
+
+    public class AtomicExample  
+    {  
+    int count;  
+    public void incrementCount()  
+    {  
+    count=count+1;  
+    }  
+
+It seems that it is also an atomic operation but not so. It is a linear-operation that consists of three operations i.e. read, modify, and write. Therefore, it can execute partially. But if we are using the above code in a multi-threaded environment, it creates a problem.
+
+Suppose, we have called the above code in a single-threaded environment, the updated value of count will be 2. If we call the above method by two separate threads, they both access the variable at the same time and also update the value of count simultaneously. To avoid this situation, we use atomic operation.
+
+Java supports several types of atomic actions, are as follows:
+
+    Volatile variables
+    Low-level atomic operations (unsafe)
+    Atomic classes
+
+Let's see how can we create an atomic operation.
+Atomic Variable
+
+The atomic variable allows us to perform an atomic operation on a variable. Atomic variables minimize synchronization and help avoid memory consistency errors. Hence, it ensures synchronization.
+
+The atomic package provides the following five atomic variables:
+
+    AtomicInteger
+    AtomicLong
+    AtomicBoolean
+    AtomicIntegerArray
+    AtomicLongArray
+
+The Need of Atomic Variable
+
+Let's consider the following code.
+
+Counter.java
+
+    class Counter extends Thread   
+    {   
+    // Counter Variable   
+    int count = 0;   
+    //the method starts the execution of a thread  
+    public void run()   
+    {   
+    int max = 1;   
+    //increments the counter variable up to specified max time  
+    for (int i = 0; i < max; i++)   
+    {   
+    count++;   
+    }   
+    }   
+    }   
+    public class Counter   
+    {   
+    public static void main(String args[]) throws InterruptedException   
+    {   
+    //creating an instance of the Counter class   
+    Counter c = new Counter();   
+    //creating four threads  
+    Thread t1 = new Thread(c, "First");   
+    Thread t2 = new Thread(c, "Second");   
+    Thread t3 = new Thread(c, "Third");   
+    Thread t4 = new Thread(c, "Fourth");   
+    //by calling the start() method, we have started the thread  
+    t1.start();   
+    t2.start();   
+    t3.start();   
+    t4.start();   
+    //main thread will wait for all the four threads until the execution of all threads do not complete  
+    t1.join();   
+    t2.join();  
+    t3.join();   
+    t4.join();   
+    //prints the final value of count variable  
+    System.out.println(c.count);  
+    }   
+    }  
+
+Output:
+
+4
+
+The above program gives the expected output if it is executed in a single-threaded environment. A multi-threaded environment may lead to unexpected output. The reason behind it that when two or more threads try to update the value at the same time then it may not update properly.
+
+Java offers two solutions to overcome this problem:
+
+    By using lock and synchronization
+    By using atomic variable
+
+Let's create a Java program and use an atomic variable to overcome the problem.
+By using Atomic Variable
+
+AtomicExample.java
+
+    class Counter extends Thread   
+    {   
+    // Counter Variable   
+    int count = 0;   
+    //the method starts the execution of a thread  
+    public void run()   
+    {   
+    int max = 1;   
+    //increments the counter variable up to specified max time  
+    for (int i = 0; i < max; i++)   
+    {   
+    count++;   
+    }   
+    }   
+    }   
+    public class Counter   
+    {   
+    public static void main(String args[]) throws InterruptedException   
+    {   
+    //creating an instance of the Counter class   
+    Counter c = new Counter();   
+    //creating four threads  
+    Thread t1 = new Thread(c, "First");   
+    Thread t2 = new Thread(c, "Second");   
+    Thread t3 = new Thread(c, "Third");   
+    Thread t4 = new Thread(c, "Fourth");   
+    //by calling the start() method, we have started the thread  
+    t1.start();   
+    t2.start();   
+    t3.start();   
+    t4.start();   
+    //main thread will wait for all the four threads until the execution of all threads do not complete  
+    t1.join();   
+    t2.join();  
+    t3.join();   
+    t4.join();   
+    //prints the final value of count variable  
+    System.out.println(c.count);  
+    }   
+    }  
+
+Output:
+
+4
+
+Synchronized Vs. Atomic Vs. Volatile
+Synchronized 	Atomic 	Volatile
+It applies to methods only. 	It applies to variables only. 	It also applies to variables only.
+It ensures visibility along with atomicity. 	It also ensures visibility along with atomicity. 	It ensures visibility, not atomicity.
+We can't achieve the same. 	We can't achieve the same. 	It stores in RAM, so accessing volatile variables is fast. But it does not provide thread-safety and synchronization.
+It can be implemented as a synchronized block or a synchronized method. 	We can't achieve the same. 	We can't achieve the same.
+It can lock the same class object or a different class object. 	We can't achieve the same. 	We can't achieve the same.
+ 

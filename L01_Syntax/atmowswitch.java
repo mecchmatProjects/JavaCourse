@@ -1,5 +1,5 @@
 
-class atmoswitch{
+class atmowsitch{
 
  public static void getPlanetAtmosphere(int seqNumberFromSun) {
     switch (seqNumberFromSun) {
@@ -21,7 +21,7 @@ class atmoswitch{
 }
 
 public static void main(String[] a){
-    getPlanetAtmosphere(3);
+    getPlanetAtmosphere(5);
 
 }
 

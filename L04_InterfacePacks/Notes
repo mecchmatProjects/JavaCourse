@@ -1,0 +1,84 @@
+### Classloader Classloader - часть JVM, которая загружает данные о классах. Все классы должны быть загружены при старте JVM.
+
+JVM перед тем как начать работать с байткодом необходимо загрузить в память данные о всех классах. Когда мы загружаем в память информацию о классах, мы эту информацию храним в виде неких объектов.
+
+При старте JVM работают следующие загрузчики, которые работают друг за другом:
+
+    Bootstrap class loader (<JAVA_HOME>/jre/lib)
+    Extensions class loader (<JAVA_HOME>/jre/lib/ext)
+    System class loader (CLASSPATH)
+
+### java.lang.Class java.lang.CLass - это класс, объекты которого описывают классы из нашей библиотеки (приложение) и firdparty.
+
+Class - объект, который представляет в runtime данные о классе объекта. Класс — тип. Объект — объект некоторого типа.
+
+Но на класс можно смотреть как на объект метакласса содержащего информацию полях, методах, константах и прочем.
+
+Основные методы Class
+
+    static Class forName(String className);
+    String getCanonicalName();
+    Fields[] getFields(String name);
+    Class[] getInterfaces();
+    Method[] getMethods();
+    Constructor[] getConstructors();
+
+### class Object class Object - класс от которого унаследованы все остальные классы. - class MyClass{..} == class MyClass extends Object{...} - void myFunction(Object varName) - может "обработать" любой объект
+
+Основные методы класса Object()
+
+    public Class<?> getClass();
+    public String toString();
+    public boolen equals(Object obj);
+    public int hashCode();
+    protected Object clone();
+    ...
+
+### Примитивные типы |bits | type | type | |-----|------|--------| | 8 | byte | boolean| | 16 | short| char | | 32 | int | float | | 64 | long | double | ### Обертки простых типов **boolean, byte, short, char, int, float, long, double**
+
+Примитивные типы:
+
+    мало памяти
+    простая структура (ячейка в памяти)
+    Stack
+
+Byte, Boolean, Short, Character, Integer, Float, Long, Double
+
+Обертки простых типов:
+
+    наследники от Object
+    сложные типы
+    Heap
+
+### Массивы и Строки **Массив**
+
+    массив это объект (наследник от Object)
+    массив хранит свой размер (new int[10]).lenght;
+    переменная может быть размером массива
+
+Для работы с массивами можно использовать класс Arrays.
+
+Строки
+
+    обертка над массивом char[]
+    char - 16 bit (UTF-16)
+    immutable: "abc" + "bcd" - создание новой строки
+
+### Размер объектов Точный размер объекта зависит от: - версии Java - издателя (Oracle JDK, open JDK...) - разрядности OS - параметров запуска JVM
+
+Размер объекта состоит из:
+
+    object header (8 byte)
+    размер примитивных типов
+    размер ссылок (32 или 64 bit на ссылку)
+
+    гранулярность 8 byte
+
+    © 2021 GitHub, Inc.
+    Terms
+    Privacy
+    Security
+    Status
+    Docs
+
+

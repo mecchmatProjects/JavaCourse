@@ -1,0 +1,27 @@
+
+Java SE
+
+0.Java: simple class,  Math
+
+1.Initialization, References, autoboxing 
+
+2. OOP: packages, classes
+
+3.Interfaces, wrappers, inner classes
+
+4 Exceptions, Loggers 
+
+5. IO, Strings, regular
+
+6. Files, Serialization, JDBA
+
+7. Stream API
+
+8. Concurrency
+ 
+9. Patterns
+
+JavaEE
+
+Spring
+

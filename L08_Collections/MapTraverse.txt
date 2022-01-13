@@ -1,0 +1,182 @@
+1. Обход Map'ы
+
+Итак, если поискать в интернете найдется с десяток разных способов выполнить обход map'ы в общем случае, когда нам важны и ключи и значения (естественно, обход просто ключей или значений делается элементарно). Часть из них отличается лишь синтаксическим сахаром, часть принципиально разные. На самом деле, конечно, какие решения медленные и какие быстрые давно известно, но все-таки интересно сколько у нас получится в попугаях.
+
+Для полноты картины рассмотрим не только обход обычных Map, но и их аналогов из IterableMap из Apache Collections и MutableMap of Eclipse (CS) collections.
+
+Давайте посмотрим на варианты:
+
+Условия задачи, пусть у нас будет Map'а чисел, будем искать сумму всех ключей и всех значений у этой Map'ы. Такая задача с одной стороны максимально упрощена, с другой гарантирует нам что оптимизатор Java не сможет выкинуть часть кода.
+
+    Используя iterator, Map.Entry и цикл while. Не самый красивый вариант, по сути аналог варианта (2), но посмотрим насколько они отличаются.
+
+    long i = 0;
+    Iterator<Map.Entry<Integer, Integer>> it = map.entrySet().iterator();
+    while (it.hasNext()) {
+        Map.Entry<Integer, Integer> pair = it.next();
+        i += pair.getKey() + pair.getValue();
+    }
+
+
+    Используя Map.Entry и цикл foreach. Классический вариант обхода map'ы.
+
+    long i = 0;
+    for (Map.Entry<Integer, Integer> pair : map.entrySet()) {
+        i += pair.getKey() + pair.getValue();
+    }
+
+
+    Используя foreach из Java 8. Посмотрим насколько производителен новый способ, появившийся в Java 8.
+
+    final long[] i = {0};
+    map.forEach((k, v) -> i[0] += k + v);
+
+
+    Используя keySet и foreach. Считается, что данный способ очень медленный, вопрос только на сколько.
+
+    long i = 0;
+    for (Integer key : map.keySet()) {
+        i += key + map.get(key);
+    }
+
+
+    Используя keySet и iterator. По сути, вариант 4 только без синтаксического сахара.
+
+    long i = 0;
+    Iterator<Integer> itr2 = map.keySet().iterator();
+    while (itr2.hasNext()) {
+        Integer key = itr2.next();
+        i += key + map.get(key);
+    }
+
+
+    Используя for и Map.Entry. Аналог 1 и 2, только в "старом стиле"
+
+    long i = 0;
+    for (Iterator<Map.Entry<Integer, Integer>> entries = map.entrySet().iterator(); entries.hasNext(); ) {
+        Map.Entry<Integer, Integer> entry = entries.next();
+        i += entry.getKey() + entry.getValue();
+    }
+
+
+    Используя Java 8 и Stream Api
+
+    final long[] i = {0};
+    map.entrySet().stream().forEach(e -> i[0] += e.getKey() + e.getValue());
+
+    // или другой вариант 
+
+
+    7a. Используя Java 8 и Stream Api c mapToLong и sum
+
+    map.entrySet().stream().mapToLong(e -> e.getKey() + e.getValue()).sum();
+
+    Используя Java 8 и параллельный Stream Api
+
+     final long[] i = {0};
+     map.entrySet().stream().parallel().forEach(e -> i[0] += e.getKey() + e.getValue()); // не совсем корректно, так как результат изменяется без синхронизации, может использовать только для замеров, см вариант 8а
+
+
+    8a. Используя Java 8 и параллельный Stream Api c mapToLong и sum
+
+     map.entrySet().parallelStream().mapToLong(e -> e.getKey() + e.getValue()).sum();
+
+
+    Используя IterableMap от Apache Collections. Данная map'a отличается необычным способом обхода.
+
+    long i = 0;
+    MapIterator<Integer, Integer> it = iterableMap.mapIterator();
+    while (it.hasNext()) {
+        i += it.next() + it.getValue();
+    }
+
+
+    Используя MutableMap от Eclipse collections (бывшие GS коллекции). Данная map'a получила свой forEach метод намного раньше чем появилась Java 8.
+
+    final long[] i = {0};
+    mutableMap.forEachKeyValue((key, value) -> {
+        i[0] += key + value;
+    });
+
+
+
+Тесты производительности
+
+    Типовое предупреждение: Все результаты даны как есть, замеры производительности вещь сложная, в вашей системе все числа могут быть совсем другие, поэтому не стоит мне верить, исходные коды на github'e, всегда можно получить результаты самостоятельно. Если считаете, что я где-то ошибся при замерах производительности (а это всегда возможно), буду благодарен если напишите в личку или комментарии.
+
+
+Режим = среднее время (AverageTime), система = Win 8.1 64-bit, Intel i7-4790 3.60GHz 3.60GHz, 16 GB, чем меньше score тем лучше)
+
+1) Для небольших map (100 элементов), score 0.312 — лучшее значение
+
+           Benchmark       Size Mode    Cnt     Score            Error  Units
+3. ForEachAndJava8        100   avgt    100 0.312   ±   0.003   us/op
+10. EclipseMap            100   avgt    100 0.354   ±   0.003   us/op
+2. ForEachAndMapEntry     100   avgt    100 0.403   ±   0.005   us/op
+1. WhileAndMapEntry       100   avgt    100 0.427   ±   0.006   us/op
+6. ForAndIterator         100   avgt    100 0.427   ±   0.006   us/op
+7a Java8StreamApi2             100  avgt    100    0.509 ±   0.036  us/op
+7. Java8StreamApi         100   avgt    100 0.529   ±   0.004   us/op
+9. ApacheIterableMap      100   avgt    100 0.585   ±   0.008   us/op
+4. KeySetAndForEach       100   avgt    100 0.937   ±   0.011   us/op
+5. KeySetAndIterator      100   avgt    100 0.94    ±   0.011   us/op
+8. Java8StreamApiParallel 100   avgt    100 6.066   ±   0.051   us/op
+8a. Java8StreamApiparallel2     100  avgt    5    9.468 ±   0.333  us/op
+
+
+2) Для средних map с 10000 элементами, score 35.301 — лучшее значение
+
+           Benchmark      Size   Mode   Cnt    Score            Error  Units
+10. EclipseMap            10000  avgt   100 35.301  ±   0.697   us/op
+3. ForEachAndJava8        10000  avgt   100 39.797  ±   0.309   us/op
+2. ForEachAndMapEntry     10000  avgt   100 43.149  ±   0.313   us/op
+1. WhileAndMapEntry       10000  avgt   100 43.295  ±   0.314   us/op
+6. ForAndIterator         10000  avgt   100 44.009  ±   0.379   us/op
+7. Java8StreamApi         10000  avgt   100 49.378  ±   0.415   us/op
+5. KeySetAndIterator      10000  avgt   100 97.844  ±   0.896   us/op
+4. KeySetAndForEach       10000  avgt   100 99.317  ±   0.862   us/op
+8. Java8StreamApiParallel 10000  avgt   100 112.364 ±   0.167   us/op
+9. ApacheIterableMap      10000  avgt   100 138.379 ±   1.387   us/op
+
+
+3) Для map с 30000 элементами, score 122.277 — лучшее значение
+
+           Benchmark      Size  Mode  Cnt        Score          Error  Units
+8a. Java8StreamApiparallel2   30000  avgt    100   95.444 ±  13.706  us/op
+10. EclipseMap            30000 avgt    100 122.277 ±   3.896   us/op
+3. ForEachAndJava8        30000 avgt    100 136.906 ±   2.392   us/op
+2. ForEachAndMapEntry     30000 avgt    100 145.845 ±   1.895   us/op
+1. WhileAndMapEntry       30000 avgt    100 149.186 ±   2.621   us/op
+6. ForAndIterator         30000 avgt    100 149.353 ±   2.427   us/op
+7a. Java8StreamApi2           30000  avgt    100  180.803 ±  53.062  us/op
+7. Java8StreamApi         30000 avgt    100 181.114 ±   3.272   us/op
+8. Java8StreamApiParallel 30000 avgt    100 342.546 ±   1.206   us/op
+5. KeySetAndIterator      30000 avgt    100 350.564 ±   8.662   us/op
+4. KeySetAndForEach       30000 avgt    100 364.362 ±   9.416   us/op
+9. ApacheIterableMap      30000 avgt    100 536.749 ±   25.819  us/op
+
+
+Обратите внимание случай 8а (параллельный стрим с mapToInt и sum) показал хорошие результаты именно из-за работы с числовыми данными, в реальных задач он далеко не всегда применим.
+
+График (тесты в зависимости от размера map'ы)
+
+enter image description here
+
+Таблица (тесты в зависимости от размера map'ы)
+
+     Benchmark             100    500   900 1300    1700    2100    2500
+10. EclipseMap            0.354  1.384  3.816   3.304   6.68    7.427   8.712
+3. ForEachAndJava8        0.312  1.692  3.143   4.265   6.506   8.343   9.821
+6. ForAndIterator         0.427  2.089  3.746   4.776   7.407   9.091   10.753
+2. ForEachAndMapEntry     0.403 2.536    3.951  5.028   7.503   9.211   10.918
+1. WhileAndMapEntry       0.427  2.026  3.4815  4.937   7.511   9.217   12.22
+7. Java8StreamApi         0.529  2.343  4.264   5.399   8.826   12.633  12.918
+9. ApacheIterableMap      0.585 2.725    5.574  9.292   13.01   17.719  23.882
+5. KeySetAndIterator      0.94   4.592  8.24    12.496  16.077  21.012  24.389
+4. KeySetAndForEach       0.937  4.572  8.251   12.522  14.831  20.502  24.881
+8. Java8StreamApiParallel 6.066 12.152   16.563 18.512  25.987  28.813  33.336
+
+
+Все тесты на github
+
+Предупреждение: Обход HashMap, EclipseMap и ApacheIterableMap рассматривался только для типового случая когда коллизий нет или почти нет, в случае когда коллизий много — результаты могут быть совсем другими. Так же не рассмотрены случаи добавления элементов, случайного доступа и т.п., то есть только по данному тесту нельзя судить какая map'a быстрее и лучше в целом,

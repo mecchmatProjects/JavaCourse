@@ -1,0 +1,64 @@
+Подсчет количество вхождений подстроки в строку
+
+Итак возьмем следующую подстроку и найдем все точки в ней:
+
+   String testString = "a.b.c.d";
+
+
+Хотел сразу предупредить: я взял для тестирования все варианты, предложенные в теме StackOverflow, здравый смысл подсказывает, что часть из них далеко не оптимальное забивание гвоздей любимым микроскопом, но мне было просто любопытно что получится в каждом случае. Поэтому, учитывайте, что далеко не все варианты ниже стоит использовать в реальном приложении!
+
+1) Используя Apache Commons
+
+int apache = StringUtils.countMatches(testString, ".");
+System.out.println("apache = " + apache);
+
+
+2) Используя Spring Framework's
+
+int spring = org.springframework.util.StringUtils.countOccurrencesOf(testString, ".");
+System.out.println("spring = " + spring);
+
+
+3) Используя replace
+
+int replace = testString.length() - testString.replace(".", "").length();
+System.out.println("replace = " + replace);
+
+
+4) Используя replaceAll (case 1)
+
+int replaceAll = testString.replaceAll("[^.]", "").length();
+System.out.println("replaceAll = " + replaceAll);
+
+
+5) Используя replaceAll (case 2)
+
+int replaceAllCase2 = testString.length() - testString.replaceAll("\\.", "").length();
+System.out.println("replaceAll (second case) = " + replaceAllCase2);
+
+
+6) Используя split
+
+int split = testString.split("\\.",-1).length-1;
+System.out.println("split = " + split);
+
+
+7) Используя Java8 (case 1). Обратите внимание в отличии от остальных вариантов тут возможен поиск только символов, не подстрок.
+
+long java8 = testString.chars().filter(ch -> ch =='.').count();
+System.out.println("java8 = " + java8);
+
+
+8) Используя Java8 (case 2), возможно несколько лучше в случае unicode строки чем case 1. Обратите внимание в отличии от остальных вариантов тут возможен поиск только символов, не подстрок.
+
+long java8Case2 = testString.codePoints().filter(ch -> ch =='.').count();
+System.out.println("java8 (second case) = " + java8Case2);
+
+
+9) Используя StringTokenizer
+
+int stringTokenizer = new StringTokenizer(" " +testString + " ", ".").countTokens()-1;
+System.out.println("stringTokenizer = " + stringTokenizer);
+
+
+Последний вариант, несколько некорректен, так как две точки подряд будут считаться за одну, то есть для a...b.c....d or ...a.b.c.d или a....b......c.....d… несколько точек будут считаться за одну.
